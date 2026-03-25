@@ -1,0 +1,119 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "TDU Events Import Schema",
+    "description": "Standardized format for importing Tour Down Under events",
+    "type": "object",
+    "required": ["events"],
+    "properties": {
+        "source": {
+            "type": "string",
+            "description": "Source of the data (e.g., 'allthetdu.com', 'manual')"
+        },
+        "scraped_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the data was scraped/created"
+        },
+        "events": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["title", "start_datetime", "end_datetime", "category"],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Event title"
+                    },
+                    "description": {
+                        "type": ["string", "null"],
+                        "description": "Event description"
+                    },
+                    "start_datetime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Start date and time (ISO 8601)"
+                    },
+                    "end_datetime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "End date and time (ISO 8601)"
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Event category slug or name (will be normalized via config/tdu.php)"
+                    },
+                    "event_type": {
+                        "type": ["string", "null"],
+                        "description": "Specific event type within category (e.g., 'prologue', 'mountain-stage')"
+                    },
+                    "sponsor": {
+                        "type": ["string", "null"],
+                        "description": "Sponsor name (will be matched or created)"
+                    },
+                    "location": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Location name"
+                            },
+                            "address": {
+                                "type": ["string", "null"],
+                                "description": "Full address"
+                            },
+                            "latitude": {
+                                "type": ["number", "null"],
+                                "description": "GPS latitude"
+                            },
+                            "longitude": {
+                                "type": ["number", "null"],
+                                "description": "GPS longitude"
+                            }
+                        },
+                        "required": ["name"]
+                    },
+                    "ride_distance_km": {
+                        "type": ["number", "null"],
+                        "description": "Ride distance in kilometers"
+                    },
+                    "elevation_gain_m": {
+                        "type": ["integer", "null"],
+                        "description": "Elevation gain in meters"
+                    },
+                    "min_cost": {
+                        "type": ["number", "null"],
+                        "description": "Minimum event cost in dollars (null = free)"
+                    },
+                    "max_cost": {
+                        "type": ["number", "null"],
+                        "description": "Maximum event cost in dollars (null = free)"
+                    },
+                    "is_free": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Whether the event is free"
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Whether this is a featured event"
+                    },
+                    "is_recurring": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Whether this event occurs on multiple days/times"
+                    },
+                    "url": {
+                        "type": ["string", "null"],
+                        "format": "uri",
+                        "description": "External event URL"
+                    },
+                    "external_id": {
+                        "type": ["string", "null"],
+                        "description": "External identifier for deduplication"
+                    }
+                }
+            }
+        }
+    }
+}

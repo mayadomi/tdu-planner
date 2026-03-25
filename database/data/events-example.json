@@ -1,0 +1,98 @@
+{
+    "source": "manual",
+    "scraped_at": "2026-01-27T00:00:00+10:30",
+    "events": [
+        {
+            "title": "Stage 1: Adelaide City Circuit",
+            "description": "The Tour kicks off with an exciting city circuit race through the heart of Adelaide.",
+            "start_datetime": "2026-01-20T10:00:00+10:30",
+            "end_datetime": "2026-01-20T14:00:00+10:30",
+            "category": "race-stage",
+            "event_type": "city-circuit",
+            "sponsor": "santos",
+            "location": {
+                "name": "Adelaide City",
+                "address": "Victoria Square, Adelaide SA 5000",
+                "latitude": -34.9285,
+                "longitude": 138.6007
+            },
+            "ride_distance_km": 51.0,
+            "elevation_gain_m": 120,
+            "min_cost": null,
+            "max_cost": null,
+            "is_free": true,
+            "is_featured": true,
+            "url": "https://allthetdu.com/stage-1",
+            "external_id": "tdu-2026-stage-1"
+        },
+        {
+            "title": "Bupa Challenge Tour - Long Course",
+            "description": "Take on the challenge of riding the same roads as the professionals!",
+            "start_datetime": "2026-01-19T06:00:00+10:30",
+            "end_datetime": "2026-01-19T14:00:00+10:30",
+            "category": "gran-fondo",
+            "event_type": "long-course",
+            "sponsor": "bupa",
+            "location": {
+                "name": "McLaren Vale",
+                "address": "Main Road, McLaren Vale SA 5171",
+                "latitude": -35.2192,
+                "longitude": 138.5456
+            },
+            "ride_distance_km": 152.0,
+            "elevation_gain_m": 2100,
+            "min_cost": 175.00,
+            "max_cost": 175.00,
+            "is_free": false,
+            "is_featured": false,
+            "url": "https://allthetdu.com/challenge-tour",
+            "external_id": "tdu-2026-challenge-long"
+        },
+        {
+            "title": "Stage 3: Willunga Hill",
+            "description": "The iconic Willunga Hill stage - the Queen Stage of the Tour Down Under.",
+            "start_datetime": "2026-01-22T11:00:00+10:30",
+            "end_datetime": "2026-01-22T15:30:00+10:30",
+            "category": "race-stage",
+            "event_type": "mountain-stage",
+            "sponsor": "santos",
+            "location": {
+                "name": "Willunga",
+                "address": "High Street, Willunga SA 5172",
+                "latitude": -35.2717,
+                "longitude": 138.5517
+            },
+            "ride_distance_km": 142.5,
+            "elevation_gain_m": 2850,
+            "min_cost": null,
+            "max_cost": null,
+            "is_free": true,
+            "is_featured": true,
+            "url": "https://allthetdu.com/stage-3",
+            "external_id": "tdu-2026-stage-3"
+        },
+        {
+            "title": "Opening Ceremony",
+            "description": "Official opening ceremony featuring team presentations and entertainment.",
+            "start_datetime": "2026-01-18T18:00:00+10:30",
+            "end_datetime": "2026-01-18T21:00:00+10:30",
+            "category": "festival-event",
+            "event_type": "opening-ceremony",
+            "sponsor": null,
+            "location": {
+                "name": "Adelaide City",
+                "address": "Victoria Square, Adelaide SA 5000",
+                "latitude": -34.9285,
+                "longitude": 138.6007
+            },
+            "ride_distance_km": null,
+            "elevation_gain_m": null,
+            "min_cost": null,
+            "max_cost": null,
+            "is_free": true,
+            "is_featured": false,
+            "url": null,
+            "external_id": "tdu-2026-opening"
+        }
+    ]
+}
