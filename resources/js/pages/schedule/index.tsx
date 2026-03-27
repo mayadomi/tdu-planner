@@ -15,7 +15,6 @@ interface ScheduleIndexProps {
     selectedDate: string;
     availableDates: string[];
     timelineBounds: TimelineBounds;
-    currentTime: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -43,7 +42,6 @@ export default function ScheduleIndex({
     selectedDate,
     availableDates,
     timelineBounds,
-    currentTime,
 }: ScheduleIndexProps) {
     const currentDateIndex = availableDates.indexOf(selectedDate);
     const hasPrevDate = currentDateIndex > 0;
@@ -143,7 +141,6 @@ export default function ScheduleIndex({
                             categories={timelineData}
                             startHour={timelineBounds.startHour}
                             endHour={timelineBounds.endHour}
-                            currentTime={currentTime}
                             selectedDate={selectedDate}
                         />
                     ) : (

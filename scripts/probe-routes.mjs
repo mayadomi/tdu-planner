@@ -10,8 +10,9 @@
  */
 
 import { writeFileSync, mkdirSync } from 'fs';
-import { DOMParser } from '@xmldom/xmldom';
+
 import { gpx, kml } from '@tmcw/togeojson';
+import { DOMParser } from '@xmldom/xmldom';
 
 // ─── All events with route_url from the DB ───────────────────────────────────
 const routes = [

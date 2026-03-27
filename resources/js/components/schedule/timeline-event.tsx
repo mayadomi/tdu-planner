@@ -1,13 +1,13 @@
-import { ExternalLink, MapPin } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { ExternalLink, MapPin } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
-import type { CategoryColor, ScheduleEvent } from '@/types/schedule';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import type { CategoryColor, ScheduleEvent } from '@/types/schedule';
 
 interface TimelineEventProps {
     event: ScheduleEvent & { lane: number };

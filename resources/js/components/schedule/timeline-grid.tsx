@@ -9,7 +9,6 @@ interface TimelineGridProps {
     categories: ScheduleCategory[];
     startHour: number;
     endHour: number;
-    currentTime: string;
     selectedDate: string;
 }
 
@@ -74,7 +73,6 @@ export function TimelineGrid({
     categories,
     startHour,
     endHour,
-    currentTime,
     selectedDate,
 }: TimelineGridProps) {
     // Single overflow-auto container — scrollbar sits at the absolute bottom

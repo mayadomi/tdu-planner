@@ -1,8 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { Building2 } from 'lucide-react';
 
-import { ImageUpload } from '@/components/ui/image-upload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ImageUpload } from '@/components/ui/image-upload';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
