@@ -47,11 +47,32 @@ export default function ScheduleIndex({
     const hasPrevDate = currentDateIndex > 0;
     const hasNextDate = currentDateIndex < availableDates.length - 1;
 
-    // Scroll the active date pill into view whenever selectedDate changes
     const selectedDateRef = useRef<HTMLButtonElement>(null);
+    const dateScrollRef = useRef<HTMLDivElement>(null);
+    const dateScrollMounted = useRef(false);
+
+    // On mount: reset to left edge. On subsequent date changes: scroll selected pill into view.
     useEffect(() => {
+        if (!dateScrollMounted.current) {
+            dateScrollMounted.current = true;
+            if (dateScrollRef.current) dateScrollRef.current.scrollLeft = 0;
+            return;
+        }
         selectedDateRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
     }, [selectedDate]);
+
+    // Keep selected date pill in view when the container resizes (e.g. desktop → mobile)
+    useEffect(() => {
+        const container = dateScrollRef.current;
+        if (!container) return;
+        const observer = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                selectedDateRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            });
+        });
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, []);
 
     const navigateToDate = (date: string) => {
         router.get('/schedule', { date }, { preserveState: true });
@@ -90,22 +111,24 @@ export default function ScheduleIndex({
                             <ChevronLeft className="size-4 sm:size-5" />
                         </Button>
 
-                        <div className="scrollbar-none flex flex-1 justify-start gap-1 overflow-x-auto">
-                            {availableDates.map((date) => (
-                                <button
-                                    key={date}
-                                    ref={date === selectedDate ? selectedDateRef : undefined}
-                                    onClick={() => navigateToDate(date)}
-                                    className={cn(
-                                        'shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm',
-                                        date === selectedDate
-                                            ? 'bg-white text-orange-600 shadow-md'
-                                            : 'text-white/90 hover:bg-white/20',
-                                    )}
-                                >
-                                    {formatDateShort(date)}
-                                </button>
-                            ))}
+                        <div ref={dateScrollRef} className="scrollbar-none min-w-0 flex-1 overflow-x-auto">
+                            <div className="mx-auto flex w-fit gap-1">
+                                {availableDates.map((date) => (
+                                    <button
+                                        key={date}
+                                        ref={date === selectedDate ? selectedDateRef : undefined}
+                                        onClick={() => navigateToDate(date)}
+                                        className={cn(
+                                            'shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm',
+                                            date === selectedDate
+                                                ? 'bg-white text-orange-600 shadow-md'
+                                                : 'text-white/90 hover:bg-white/20',
+                                        )}
+                                    >
+                                        {formatDateShort(date)}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <Button

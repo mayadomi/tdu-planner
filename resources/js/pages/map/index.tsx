@@ -126,6 +126,8 @@ export default function MapIndex({ markers, selectedDate, availableDates }: MapI
     const [hoveredEventId, setHoveredEventId] = useState<number | null>(null);
     const [cursor, setCursor] = useState<string>('auto');
     const selectedDateRef = useRef<HTMLButtonElement>(null);
+    const dateScrollRef = useRef<HTMLDivElement>(null);
+    const dateScrollMounted = useRef(false);
 
     // Build a single GeoJSON FeatureCollection from all events that have routes
     const routeCollection = useMemo<GeoJSON.FeatureCollection>(() => {
@@ -248,17 +250,31 @@ export default function MapIndex({ markers, selectedDate, availableDates }: MapI
     }, []);
 
     useEffect(() => {
+        if (!dateScrollMounted.current) {
+            dateScrollMounted.current = true;
+            if (dateScrollRef.current) dateScrollRef.current.scrollLeft = 0;
+            return;
+        }
         selectedDateRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
     }, [selectedDate]);
 
-    // Clear popups when the date changes
+    // Keep selected date pill in view when the container resizes (e.g. desktop → mobile)
     useEffect(() => {
+        const container = dateScrollRef.current;
+        if (!container) return;
+        const observer = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                selectedDateRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            });
+        });
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, []);
+
+    const navigateToDate = useCallback((date: string) => {
         setSelectedMarker(null);
         setSelectedEvents([]);
         setPopupLngLat(null);
-    }, [selectedDate]);
-
-    const navigateToDate = useCallback((date: string) => {
         router.get('/map', { date }, { preserveState: true });
     }, []);
 
@@ -301,22 +317,24 @@ export default function MapIndex({ markers, selectedDate, availableDates }: MapI
                             <ChevronLeft className="size-4 sm:size-5" />
                         </Button>
 
-                        <div className="scrollbar-none flex flex-1 justify-start gap-1 overflow-x-auto">
-                            {availableDates.map((date) => (
-                                <button
-                                    key={date}
-                                    ref={date === selectedDate ? selectedDateRef : undefined}
-                                    onClick={() => navigateToDate(date)}
-                                    className={cn(
-                                        'shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm',
-                                        date === selectedDate
-                                            ? 'bg-white text-orange-600 shadow-md'
-                                            : 'text-white/90 hover:bg-white/20',
-                                    )}
-                                >
-                                    {formatDateShort(date)}
-                                </button>
-                            ))}
+                        <div ref={dateScrollRef} className="scrollbar-none min-w-0 flex-1 overflow-x-auto">
+                            <div className="mx-auto flex w-fit gap-1">
+                                {availableDates.map((date) => (
+                                    <button
+                                        key={date}
+                                        ref={date === selectedDate ? selectedDateRef : undefined}
+                                        onClick={() => navigateToDate(date)}
+                                        className={cn(
+                                            'shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm',
+                                            date === selectedDate
+                                                ? 'bg-white text-orange-600 shadow-md'
+                                                : 'text-white/90 hover:bg-white/20',
+                                        )}
+                                    >
+                                        {formatDateShort(date)}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <Button

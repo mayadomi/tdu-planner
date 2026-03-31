@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, Calendar, CalendarClock, ClockAlert, Folder, Heart, LayoutGrid, Map, Monitor, Moon, Plus, Settings, Shield, Sun, Users } from 'lucide-react';
+import { Calendar, CalendarClock, ClockAlert, Folder, Heart, LayoutGrid, Map, Monitor, Moon, Plus, Settings, Shield, Sun, Users } from 'lucide-react';
 
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -44,8 +44,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-    { title: 'Repository',   href: 'https://github.com/laravel/react-starter-kit', icon: Folder },
-    { title: 'Documentation', href: 'https://laravel.com/docs/starter-kits#react',  icon: BookOpen },
+    { title: 'Repository', href: 'https://github.com/laravel/react-starter-kit', icon: Folder },
 ];
 
 const appearanceIcons = { light: Sun, dark: Moon, system: Monitor } as const;
