@@ -1,7 +1,5 @@
 <?php
 
-it('redirects guests from / to the events index', function () {
-    $response = $this->get('/');
-
-    $response->assertRedirect(route('events.index'));
+it('renders the homepage for guests', function () {
+    $this->get('/')->assertOk()->assertInertia(fn ($page) => $page->component('home'));
 });

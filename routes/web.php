@@ -7,21 +7,18 @@ use App\Http\Controllers\Api\FavouriteController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\SponsorController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\FavouritePageController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileEditorRequestController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SponsorPageController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
-Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('events.index');
-})->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 // Public event pages — /events/create must be declared before /{event} wildcard
 Route::get('/events', [EventPageController::class, 'index'])->name('events.index');
@@ -53,7 +50,8 @@ Route::prefix('api')->group(function () {
 
 // Authenticated routes (viewer and above)
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('welcome', WelcomeController::class)->name('welcome');
 
     // Favourites page
     Route::get('/favourites', [FavouritePageController::class, 'index'])->name('favourites.index');

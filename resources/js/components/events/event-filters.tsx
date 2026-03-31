@@ -24,6 +24,8 @@ interface EventFiltersProps {
     locations: Location[];
     tags: Tag[];
     currentFilters: Filters;
+    tduYear?: number;
+    availableYears?: number[];
     className?: string;
     onApply?: () => void;
     bare?: boolean;
@@ -34,6 +36,8 @@ export function EventFilters({
     locations,
     tags,
     currentFilters,
+    tduYear,
+    availableYears,
     className,
     onApply,
     bare = false,
@@ -48,18 +52,21 @@ export function EventFilters({
     }, [currentFilters]);
 
     const navigate = useCallback((updated: Filters) => {
-        const params = Object.fromEntries(
+        const params: Record<string, unknown> = Object.fromEntries(
             Object.entries(updated)
                 .filter(([, v]) => v !== undefined && v !== '' && v !== false && !(Array.isArray(v) && v.length === 0))
                 .map(([k, v]) => [k, v === true ? 1 : v]),
         );
+        if (tduYear !== undefined && availableYears && tduYear !== availableYears[0]) {
+            params.year = tduYear;
+        }
         setIsLoading(true);
         router.get('/events', params, {
             preserveState: true,
             onFinish: () => setIsLoading(false),
         });
         onApply?.();
-    }, [onApply]);
+    }, [onApply, tduYear, availableYears]);
 
     // For instant-apply controls (checkboxes, selects, tags).
     const updateAndApply = useCallback(<K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -90,12 +97,16 @@ export function EventFilters({
     const resetFilters = useCallback(() => {
         setFilters({});
         setIsLoading(true);
-        router.get('/events', {}, {
+        const params: Record<string, unknown> = {};
+        if (tduYear !== undefined && availableYears && tduYear !== availableYears[0]) {
+            params.year = tduYear;
+        }
+        router.get('/events', params, {
             preserveState: true,
             onFinish: () => setIsLoading(false),
         });
         onApply?.();
-    }, [onApply]);
+    }, [onApply, tduYear, availableYears]);
 
     // Exclude 'search' — it has its own dedicated search bar above the page
     const { search: _search, ...sidebarFilters } = currentFilters;

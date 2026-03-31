@@ -14,9 +14,11 @@ interface Suggestion {
 
 interface EventSearchProps {
     currentFilters: Filters;
+    tduYear?: number;
+    availableYears?: number[];
 }
 
-export function EventSearch({ currentFilters }: EventSearchProps) {
+export function EventSearch({ currentFilters, tduYear, availableYears }: EventSearchProps) {
     const [query, setQuery] = useState(currentFilters.search ?? '');
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -67,13 +69,16 @@ export function EventSearch({ currentFilters }: EventSearchProps) {
     }, []);
 
     const navigate = useCallback((params: Filters) => {
-        const clean = Object.fromEntries(
+        const clean: Record<string, unknown> = Object.fromEntries(
             Object.entries(params)
                 .filter(([, v]) => v !== undefined && v !== '' && v !== false && !(Array.isArray(v) && v.length === 0))
                 .map(([k, v]) => [k, v === true ? 1 : v]),
         );
+        if (tduYear !== undefined && availableYears && tduYear !== availableYears[0]) {
+            clean.year = tduYear;
+        }
         router.get('/events', clean, { preserveState: true });
-    }, []);
+    }, [tduYear, availableYears]);
 
     const applySearch = useCallback((term: string) => {
         const trimmed = term.trim();

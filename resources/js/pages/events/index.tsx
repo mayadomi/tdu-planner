@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Calendar, ChevronLeft, ChevronRight, Filter, Sparkles, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,6 +24,8 @@ interface EventsIndexProps {
     tags: Tag[];
     filters: Filters;
     featuredEvents?: Event[];
+    tduYear: number;
+    availableYears: number[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -37,12 +39,18 @@ export default function EventsIndex({
     tags,
     filters,
     featuredEvents,
+    tduYear,
+    availableYears,
 }: EventsIndexProps) {
     const [filtersOpen, setFiltersOpen] = useState(false);
 
     const activeFilterCount = Object.values(filters).filter(
         v => v !== undefined && v !== '' && v !== false,
     ).length;
+
+    const switchYear = (year: number) => {
+        router.get('/events', year !== availableYears[0] ? { year } : {});
+    };
 
     const pageLinks = events.links.slice(1, -1);
     const lastPage = events.last_page;
@@ -77,14 +85,37 @@ export default function EventsIndex({
             <div className="flex flex-col gap-4 p-3 sm:gap-6 sm:p-4 lg:p-6">
                 {/* Header */}
                 <div className="flex flex-col gap-1 sm:gap-2">
-                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Tour Down Under Events</h1>
-                    <p className="text-sm text-muted-foreground sm:text-base">
-                        Discover cycling events, community rides, and festival activities
-                    </p>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Tour Down Under Events</h1>
+                            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+                                Discover cycling events, community rides, and festival activities
+                            </p>
+                        </div>
+
+                        {/* TDU year switcher */}
+                        {availableYears.length > 1 && (
+                            <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
+                                {availableYears.map((year) => (
+                                    <button
+                                        key={year}
+                                        onClick={() => switchYear(year)}
+                                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                            year === tduYear
+                                                ? 'bg-background text-foreground shadow-sm'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        TDU {year}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Search */}
-                <EventSearch currentFilters={filters} />
+                <EventSearch currentFilters={filters} tduYear={tduYear} availableYears={availableYears} />
 
                 {/* Featured Events (if available and no filters applied) */}
                 {featuredEvents && featuredEvents.length > 0 && Object.keys(filters).length === 0 && (
@@ -126,6 +157,8 @@ export default function EventsIndex({
                                     locations={locations}
                                     tags={tags}
                                     currentFilters={filters}
+                                    tduYear={tduYear}
+                                    availableYears={availableYears}
                                     onApply={() => setFiltersOpen(false)}
                                     bare
                                 />
@@ -143,6 +176,8 @@ export default function EventsIndex({
                             locations={locations}
                             tags={tags}
                             currentFilters={filters}
+                            tduYear={tduYear}
+                            availableYears={availableYears}
                         />
                     </aside>
 

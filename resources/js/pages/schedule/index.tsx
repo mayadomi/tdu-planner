@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
@@ -15,6 +15,8 @@ interface ScheduleIndexProps {
     selectedDate: string;
     availableDates: string[];
     timelineBounds: TimelineBounds;
+    tduYear: number;
+    availableYears: number[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -42,6 +44,8 @@ export default function ScheduleIndex({
     selectedDate,
     availableDates,
     timelineBounds,
+    tduYear,
+    availableYears,
 }: ScheduleIndexProps) {
     const currentDateIndex = availableDates.indexOf(selectedDate);
     const hasPrevDate = currentDateIndex > 0;
@@ -75,7 +79,11 @@ export default function ScheduleIndex({
     }, []);
 
     const navigateToDate = (date: string) => {
-        router.get('/schedule', { date }, { preserveState: true });
+        router.get('/schedule', { date, year: tduYear }, { preserveState: true });
+    };
+
+    const switchYear = (year: number) => {
+        router.get('/schedule', year !== availableYears[0] ? { year } : {});
     };
 
     const goToPrevDate = () => {
@@ -93,6 +101,25 @@ export default function ScheduleIndex({
             <div className="flex min-h-0 flex-1 flex-col">
                 {/* Header */}
                 <div className="shrink-0 border-b bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-3 text-white sm:px-4 sm:py-4">
+
+                    {/* TDU year switcher */}
+                    {availableYears.length > 1 && (
+                        <div className="flex items-center justify-center gap-1">
+                            {availableYears.map((year) => (
+                                <button
+                                    key={year}
+                                    onClick={() => switchYear(year)}
+                                    className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors sm:text-sm ${
+                                        year === tduYear
+                                            ? 'bg-white/20 text-white ring-1 ring-white/40'
+                                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                    }`}
+                                >
+                                    TDU {year}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Search */}
                     <div className="mt-2 sm:mt-3">

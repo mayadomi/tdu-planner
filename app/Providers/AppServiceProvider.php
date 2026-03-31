@@ -20,7 +20,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Redirect to /welcome after successful registration instead of /dashboard
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            fn () => new class implements \Laravel\Fortify\Contracts\RegisterResponse
+            {
+                public function toResponse($request): mixed
+                {
+                    return $request->wantsJson()
+                        ? response()->json(['two_factor' => false])
+                        : redirect('/welcome');
+                }
+            }
+        );
     }
 
     /**

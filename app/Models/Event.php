@@ -309,6 +309,59 @@ class Event extends Model implements HasMedia
     }
 
     /**
+     * Compute the TDU year a given date belongs to.
+     * October–December of year N belongs to TDU year N+1.
+     */
+    public static function tduYearFor(\Carbon\CarbonInterface $date): int
+    {
+        return $date->month >= 10 ? $date->year + 1 : $date->year;
+    }
+
+    /**
+     * The TDU year that today falls within.
+     */
+    public static function currentTduYear(): int
+    {
+        return static::tduYearFor(now());
+    }
+
+    /**
+     * All TDU years represented in the events table, newest first.
+     * Always includes the current TDU year even if no events exist yet.
+     *
+     * @return array<int>
+     */
+    public static function availableTduYears(): array
+    {
+        $min = static::query()->min('start_datetime');
+        $max = static::query()->max('start_datetime');
+
+        if (! $min) {
+            return [static::currentTduYear()];
+        }
+
+        $minYear = static::tduYearFor(\Carbon\CarbonImmutable::parse($min));
+        $maxYear = max(
+            static::tduYearFor(\Carbon\CarbonImmutable::parse($max)),
+            static::currentTduYear()
+        );
+
+        return array_values(array_reverse(range($minYear, $maxYear)));
+    }
+
+    /**
+     * Scope: events belonging to a specific TDU season.
+     * TDU year Y spans October 1 of (Y-1) through September 30 of Y.
+     */
+    public function scopeForTduYear(Builder $query, int $year): Builder
+    {
+        return $query->whereBetween('start_datetime', [
+            \Carbon\CarbonImmutable::create($year - 1, 10, 1)->startOfDay(),
+            \Carbon\CarbonImmutable::create($year, 9, 30)->endOfDay(),
+        ]);
+    }
+
+    /**
      * Scope: Full-text search across title and description.
      */
     public function scopeSearch(Builder $query, string $term): Builder

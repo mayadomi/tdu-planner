@@ -27,7 +27,10 @@ class EventPageController extends Controller
      */
     public function index(FilterEventsRequest $request): Response
     {
+        $tduYear = (int) ($request->input('year') ?: Event::currentTduYear());
+
         $query = Event::with(['category', 'sponsor', 'location', 'tags'])
+            ->forTduYear($tduYear)
             ->withCount('favouritedBy');
 
         // Apply filters and sorting
@@ -60,14 +63,16 @@ class EventPageController extends Controller
         $tags = Cache::remember('filter_tags', 3600, fn () => Tag::withCount('events')->orderBy('name')->get()
         );
 
-        // Get featured events for homepage state (no filters applied)
+        // Get featured events when no content filters are active
         $featuredEvents = null;
-        if (empty($request->except(['page', 'per_page']))) {
+        $contentFilters = $request->except(['page', 'per_page', 'year', 'sort', 'order']);
+        if (empty($contentFilters)) {
             $featuredEvents = EventResource::collection(
                 Event::with(['category', 'sponsor', 'location', 'tags'])
+                    ->forTduYear($tduYear)
                     ->withCount('favouritedBy')
                     ->featured()
-                    ->upcoming()
+                    ->orderBy('start_datetime')
                     ->limit(6)
                     ->get()
             )->resolve();
@@ -78,12 +83,14 @@ class EventPageController extends Controller
             'categories' => $categories,
             'locations' => $locations,
             'tags' => $tags,
-            'filters' => $request->only([
+            'filters' => (object) $request->only([
                 'search', 'date', 'start_date', 'end_date', 'category', 'sponsor', 'location',
                 'min_distance', 'max_distance', 'min_elevation', 'max_elevation',
                 'rides_only', 'featured', 'free', 'recurring', 'womens', 'min_cost', 'max_cost',
                 'min_favourites', 'tags', 'sort', 'order',
             ]),
+            'tduYear' => $tduYear,
+            'availableYears' => Event::availableTduYears(),
             'featuredEvents' => $featuredEvents,
         ]);
     }

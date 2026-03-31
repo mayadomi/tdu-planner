@@ -36,16 +36,19 @@ class ScheduleController extends Controller
      */
     public function index(Request $request): Response
     {
-        // Get date range for the TDU (default to event date range in DB)
-        $dateRange = $this->getEventDateRange();
+        $tduYear = (int) ($request->input('year') ?: Event::currentTduYear());
+
+        // Get date range for the selected TDU year
+        $dateRange = $this->getEventDateRange($tduYear);
 
         // Selected date (default to first event date or today), in display timezone
         $selectedDate = $request->input('date')
             ? Carbon::parse($request->input('date'), self::DISPLAY_TZ)->startOfDay()
             : ($dateRange['start'] ?? Carbon::now(self::DISPLAY_TZ)->startOfDay());
 
-        // Get events for the selected date, grouped by category
+        // Get events for the selected date, scoped to the TDU year
         $events = Event::with(['category', 'sponsor', 'location'])
+            ->forTduYear($tduYear)
             ->whereDate('start_datetime', $selectedDate)
             ->orderBy('start_datetime')
             ->get();
@@ -54,13 +57,13 @@ class ScheduleController extends Controller
         $allCategories = Category::whereIn('slug', self::CATEGORY_ORDER)->get()->keyBy('slug');
 
         // Group the day's events by category slug
-        $eventsBySlug = $events->groupBy(fn($event) => $event->category?->slug ?? 'other');
+        $eventsBySlug = $events->groupBy(fn ($event) => $event->category?->slug ?? 'other');
 
         // Build timeline rows in canonical order, always including every category
         $timelineData = [];
         foreach (self::CATEGORY_ORDER as $slug) {
             $category = $allCategories->get($slug);
-            if (!$category) {
+            if (! $category) {
                 continue;
             }
 
@@ -74,7 +77,8 @@ class ScheduleController extends Controller
                 ],
                 'events' => $categoryEvents->map(function ($event) {
                     $start = $event->start_datetime;
-                    $end   = $event->end_datetime;
+                    $end = $event->end_datetime;
+
                     return [
                         'id' => $event->id,
                         'title' => $event->title,
@@ -94,12 +98,13 @@ class ScheduleController extends Controller
             ];
         }
 
-        // Get available dates (dates that have events)
-        $availableDates = Event::selectRaw('DATE(start_datetime) as date')
+        // Get available dates scoped to the TDU year
+        $availableDates = Event::forTduYear($tduYear)
+            ->selectRaw('DATE(start_datetime) as date')
             ->distinct()
             ->orderBy('date')
             ->pluck('date')
-            ->map(fn($date) => Carbon::parse($date)->format('Y-m-d'))
+            ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
             ->toArray();
 
         // Calculate timeline bounds (earliest start, latest end for the day)
@@ -107,30 +112,32 @@ class ScheduleController extends Controller
         $dayEnd = 23;  // 11 PM
 
         if ($events->isNotEmpty()) {
-            $latestEnd = $events->max(fn($e) => $e->end_datetime->hour + 1);
+            $latestEnd = $events->max(fn ($e) => $e->end_datetime->hour + 1);
             $dayEnd = min(24, max($dayEnd, $latestEnd));
         }
 
         return Inertia::render('schedule/index', [
-            'timelineData'    => $timelineData,
-            'selectedDate'    => $selectedDate->format('Y-m-d'),
-            'availableDates'  => $availableDates,
-            'timelineBounds'  => [
+            'timelineData' => $timelineData,
+            'selectedDate' => $selectedDate->format('Y-m-d'),
+            'availableDates' => $availableDates,
+            'timelineBounds' => [
                 'startHour' => $dayStart,
-                'endHour'   => $dayEnd,
+                'endHour' => $dayEnd,
             ],
-            'currentTime'     => now()->toIso8601String(),
+            'currentTime' => now()->toIso8601String(),
             'highlightEventId' => $request->integer('highlight') ?: null,
+            'tduYear' => $tduYear,
+            'availableYears' => Event::availableTduYears(),
         ]);
     }
 
     /**
-     * Get the date range of all events.
+     * Get the date range of events for a given TDU year.
      */
-    private function getEventDateRange(): array
+    private function getEventDateRange(int $year): array
     {
-        $firstEvent = Event::orderBy('start_datetime')->first();
-        $lastEvent = Event::orderBy('start_datetime', 'desc')->first();
+        $firstEvent = Event::forTduYear($year)->orderBy('start_datetime')->first();
+        $lastEvent = Event::forTduYear($year)->orderBy('start_datetime', 'desc')->first();
 
         return [
             'start' => $firstEvent?->start_datetime?->startOfDay(),
