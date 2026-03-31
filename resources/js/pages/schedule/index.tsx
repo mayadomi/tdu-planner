@@ -90,7 +90,7 @@ export default function ScheduleIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Schedule | TDU Planner" />
 
-            <div className="flex h-[calc(100dvh-4rem)] flex-col">
+            <div className="flex min-h-0 flex-1 flex-col">
                 {/* Header */}
                 <div className="shrink-0 border-b bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-3 text-white sm:px-4 sm:py-4">
 
