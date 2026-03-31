@@ -33,10 +33,16 @@ class MapController extends Controller
             ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
             ->toArray();
 
+        // Fetch the authenticated user's favourite event IDs in one query
+        $user = $request->user();
+        $favouriteEventIds = $user
+            ? $user->favourites()->pluck('event_id')->flip()->all()
+            : [];
+
         // Group events by location so each pin can show multiple events
         $markers = $events
             ->groupBy('location_id')
-            ->map(function ($locationEvents) {
+            ->map(function ($locationEvents) use ($favouriteEventIds) {
                 $location = $locationEvents->first()->location;
 
                 return [
@@ -58,6 +64,7 @@ class MapController extends Controller
                         'route_geojson' => $event->route_geojson,
                         'sponsor_logo_url' => $event->sponsor?->getFirstMediaUrl('logo_square', 'display') ?: null,
                         'sponsor_logo_dark_url' => $event->sponsor?->getFirstMediaUrl('logo_square_dark', 'display') ?: null,
+                        'is_favourited' => isset($favouriteEventIds[$event->id]),
                     ])->values()->toArray(),
                 ];
             })

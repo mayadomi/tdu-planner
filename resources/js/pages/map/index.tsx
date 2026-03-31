@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import { Layer, Map as MapGL, Marker, Popup, Source } from 'react-map-gl/maplibre';
 
+import { FavouriteButton } from '@/components/events/favourite-button';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ interface MapEvent {
     route_geojson: GeoJSON.FeatureCollection | null;
     sponsor_logo_url: string | null;
     sponsor_logo_dark_url: string | null;
+    is_favourited: boolean;
 }
 
 interface MapMarker {
@@ -739,30 +741,35 @@ function EventCard({
                 </div>
             </div>
 
-            {/* Right: close + external link stacked in category-coloured panel */}
-            {(onClose || event.url) && (
-                <div className="flex w-10 shrink-0 flex-col" style={{ backgroundColor: hexColor }}>
-                    {onClose && (
-                        <button
-                            onClick={onClose}
-                            aria-label="Close"
-                            className="flex flex-1 items-center justify-center hover:brightness-90"
-                        >
-                            <X className="size-4 stroke-[2.5] text-white" />
-                        </button>
-                    )}
-                    {event.url && (
-                        <a
-                            href={event.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center hover:brightness-90"
-                        >
-                            <ExternalLink className="size-5 stroke-[2.5] text-white" />
-                        </a>
-                    )}
+            {/* Right: close + favourite + external link stacked in category-coloured panel */}
+            <div className="flex w-10 shrink-0 flex-col" style={{ backgroundColor: hexColor }}>
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        aria-label="Close"
+                        className="flex flex-1 items-center justify-center hover:brightness-90"
+                    >
+                        <X className="size-4 stroke-[2.5] text-white" />
+                    </button>
+                )}
+                <div className="flex flex-1 items-center justify-center">
+                    <FavouriteButton
+                        eventId={event.id}
+                        isFavourited={event.is_favourited}
+                        className="border-0 bg-transparent text-white shadow-none hover:bg-white/20 hover:text-white"
+                    />
                 </div>
-            )}
+                {event.url && (
+                    <a
+                        href={event.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-1 items-center justify-center hover:brightness-90"
+                    >
+                        <ExternalLink className="size-5 stroke-[2.5] text-white" />
+                    </a>
+                )}
+            </div>
         </div>
     );
 }
