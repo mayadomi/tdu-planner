@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { home } from '@/routes';
 import type { BreadcrumbItem, SharedData } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Welcome', href: '/welcome' }];
@@ -117,7 +117,7 @@ function ViewerWelcome({ name }: { name: string }) {
                     </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                    <Link href={dashboard().url}>Go to dashboard</Link>
+                    <Link href={home().url}>Go to homepage</Link>
                 </Button>
             </div>
         </div>
@@ -200,7 +200,7 @@ function CreatorWelcome({ name, role }: { name: string; role: string }) {
                         { label: 'Browse events', href: '/events' },
                         { label: 'Check the schedule', href: '/schedule' },
                         { label: 'View the map', href: '/map' },
-                        { label: 'Go to dashboard', href: dashboard().url },
+                        { label: 'Go to welcome', href: home().url },
                     ].map(({ label, href }) => (
                         <Button key={href} asChild variant="outline" size="sm">
                             <Link href={href}>{label}</Link>

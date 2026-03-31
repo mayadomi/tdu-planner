@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
-import { dashboard, login, register } from '@/routes';
+import { login, register, welcome } from '@/routes';
 import type { SharedData } from '@/types';
 import type { Event } from '@/types/events';
 
@@ -103,7 +103,7 @@ function SiteNav({ isLoggedIn, userName }: { isLoggedIn: boolean; userName?: str
                     <div className="ml-2 flex items-center gap-2">
                         {isLoggedIn ? (
                             <Button asChild size="sm">
-                                <Link href={dashboard().url}>
+                                <Link href={welcome().url}>
                                     Go to app
                                     <ArrowRight className="ml-1.5 size-3.5" />
                                 </Link>

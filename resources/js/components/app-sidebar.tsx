@@ -21,13 +21,12 @@ import {
     SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { useAppearance } from '@/hooks/use-appearance';
-import { dashboard } from '@/routes';
+import { home, welcome } from '@/routes';
 import type { NavItem, SharedData } from '@/types';
 
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
-    { title: 'Dashboard',     href: dashboard(),  icon: LayoutGrid },
+const publicNavItems: NavItem[] = [
     { title: 'Events',        href: '/events',    icon: Calendar },
     { title: 'Schedule',      href: '/schedule',  icon: CalendarClock },
     { title: 'Map',           href: '/map',       icon: Map },
@@ -52,6 +51,12 @@ const appearanceIcons = { light: Sun, dark: Moon, system: Monitor } as const;
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
     const role = auth?.user?.role;
+
+    const homeHref = auth?.user ? welcome() : home();
+    const mainNavItems: NavItem[] = [
+        { title: 'Home', href: homeHref, icon: LayoutGrid },
+        ...publicNavItems,
+    ];
     const { appearance, updateAppearance } = useAppearance();
     const AppearanceIcon = appearanceIcons[appearance] ?? Monitor;
 
@@ -66,7 +71,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
