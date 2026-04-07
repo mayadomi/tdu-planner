@@ -168,33 +168,6 @@ export default function EventEdit({ event, categories, sponsors, locations, tags
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="pace">Pace</Label>
-                                <Input
-                                    id="pace"
-                                    value={data.pace}
-                                    onChange={(e) => setData('pace', e.target.value)}
-                                    placeholder="e.g. 28–32 km/h, A-grade, Social"
-                                />
-                                {errors.pace && (
-                                    <p className="text-sm text-destructive">{errors.pace}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="route_url">Route URL</Label>
-                                <Input
-                                    id="route_url"
-                                    type="url"
-                                    value={data.route_url}
-                                    onChange={(e) => setData('route_url', e.target.value)}
-                                    placeholder="e.g. https://www.strava.com/routes/..."
-                                />
-                                {errors.route_url && (
-                                    <p className="text-sm text-destructive">{errors.route_url}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
                                 <Label htmlFor="url">External URL</Label>
                                 <Input
                                     id="url"
@@ -372,21 +345,6 @@ export default function EventEdit({ event, categories, sponsors, locations, tags
                         </CardContent>
                     </Card>
 
-                    {/* Route GPX */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Route</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <GpxUpload
-                                hasRoute={event.has_route}
-                                routeGpxName={event.route_gpx_name}
-                                uploadRoute={`/events/${event.id}/route`}
-                                deleteRoute={`/events/${event.id}/route`}
-                            />
-                        </CardContent>
-                    </Card>
-
                     {/* Flags */}
                     <Card>
                         <CardHeader>
@@ -483,15 +441,28 @@ export default function EventEdit({ event, categories, sponsors, locations, tags
                         </CardContent>
                     </Card>
 
-                    {/* Ride Metrics */}
+                    {/* Ride & Route */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Ride Metrics</CardTitle>
+                            <CardTitle>Ride &amp; Route</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">
                                 Leave blank if this is not a ride event.
                             </p>
+                            <div className="space-y-2">
+                                <Label htmlFor="pace">Pace</Label>
+                                <Input
+                                    id="pace"
+                                    value={data.pace}
+                                    onChange={(e) => setData('pace', e.target.value)}
+                                    placeholder="e.g. 28–32 km/h, A-grade, Social"
+                                />
+                                {errors.pace && (
+                                    <p className="text-sm text-destructive">{errors.pace}</p>
+                                )}
+                            </div>
+
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="ride_distance_km">Distance (km)</Label>
@@ -523,6 +494,32 @@ export default function EventEdit({ event, categories, sponsors, locations, tags
                                         <p className="text-sm text-destructive">{errors.elevation_gain_m}</p>
                                     )}
                                 </div>
+                            </div>
+
+                            <Separator />
+
+                            <div className="space-y-2">
+                                <Label htmlFor="route_url">Route URL</Label>
+                                <Input
+                                    id="route_url"
+                                    type="url"
+                                    value={data.route_url}
+                                    onChange={(e) => setData('route_url', e.target.value)}
+                                    placeholder="e.g. https://www.strava.com/routes/..."
+                                />
+                                {errors.route_url && (
+                                    <p className="text-sm text-destructive">{errors.route_url}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Route File</Label>
+                                <GpxUpload
+                                    hasRoute={event.has_route}
+                                    routeGpxName={event.route_gpx_name}
+                                    uploadRoute={`/events/${event.id}/route`}
+                                    deleteRoute={`/events/${event.id}/route`}
+                                />
                             </div>
                         </CardContent>
                     </Card>

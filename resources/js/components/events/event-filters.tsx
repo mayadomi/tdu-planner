@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import type { FormDataConvertible } from '@inertiajs/core';
 import { Filter, Loader2, RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -52,7 +53,7 @@ export function EventFilters({
     }, [currentFilters]);
 
     const navigate = useCallback((updated: Filters) => {
-        const params: Record<string, unknown> = Object.fromEntries(
+        const params: Record<string, FormDataConvertible> = Object.fromEntries(
             Object.entries(updated)
                 .filter(([, v]) => v !== undefined && v !== '' && v !== false && !(Array.isArray(v) && v.length === 0))
                 .map(([k, v]) => [k, v === true ? 1 : v]),
@@ -97,7 +98,7 @@ export function EventFilters({
     const resetFilters = useCallback(() => {
         setFilters({});
         setIsLoading(true);
-        const params: Record<string, unknown> = {};
+        const params: Record<string, FormDataConvertible> = {};
         if (tduYear !== undefined && availableYears && tduYear !== availableYears[0]) {
             params.year = tduYear;
         }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SponsorClaimController as AdminSponsorClaimController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\EventSearchController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\FavouritePageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileEditorRequestController;
+use App\Http\Controllers\ProfileEventController;
+use App\Http\Controllers\ProfileSponsorClaimController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SponsorPageController;
 use App\Http\Controllers\WelcomeController;
@@ -69,10 +72,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('profile.request-editor');
     Route::delete('/profile/request-editor', [ProfileEditorRequestController::class, 'destroy'])
         ->name('profile.cancel-editor-request');
+
+    // Sponsor claims (editors manage their own associations)
+    Route::get('/profile/sponsors', [ProfileSponsorClaimController::class, 'index'])
+        ->name('profile.sponsors.index');
+    Route::post('/profile/sponsors', [ProfileSponsorClaimController::class, 'store'])
+        ->name('profile.sponsors.store');
+    Route::delete('/profile/sponsors/{sponsorClaim}', [ProfileSponsorClaimController::class, 'destroy'])
+        ->name('profile.sponsors.destroy');
 });
 
-// Editor + Admin routes (create/edit events, manage sponsors)
+// Editor + Admin routes (create/edit events, manage organising bodies)
 Route::middleware(['auth', 'verified', 'editor'])->group(function () {
+    // Organising body management (logo uploads etc.) — editors see only their verified bodies
+    Route::get('/sponsors', [SponsorPageController::class, 'index'])->name('sponsors.index');
+    Route::post('/sponsors/{sponsor:slug}/images/{collection}', [SponsorPageController::class, 'uploadImage'])->name('sponsors.image.upload');
+    Route::delete('/sponsors/{sponsor:slug}/images/{collection}', [SponsorPageController::class, 'deleteImage'])->name('sponsors.image.delete');
+
+    // My Events (events created by this user)
+    Route::get('/profile/events', [ProfileEventController::class, 'index'])->name('profile.events.index');
+
     // Create event
     Route::get('/events/create', [EventPageController::class, 'create'])->name('events.create');
     Route::post('/events', [EventPageController::class, 'store'])->name('events.store');
@@ -89,16 +108,19 @@ Route::middleware(['auth', 'verified', 'editor'])->group(function () {
     Route::post('/events/{event}/route', [EventPageController::class, 'uploadRoute'])->name('events.route.upload')->whereNumber('event');
     Route::delete('/events/{event}/route', [EventPageController::class, 'deleteRoute'])->name('events.route.delete')->whereNumber('event');
 
-    // Sponsor management
-    Route::get('/sponsors', [SponsorPageController::class, 'index'])->name('sponsors.index');
-    Route::post('/sponsors/{sponsor:slug}/images/{collection}', [SponsorPageController::class, 'uploadImage'])->name('sponsors.image.upload');
-    Route::delete('/sponsors/{sponsor:slug}/images/{collection}', [SponsorPageController::class, 'deleteImage'])->name('sponsors.image.delete');
 });
 
 // Admin-only routes
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-    Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.update-role');
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.update-role');
+
+        // Sponsor claim review queue
+        Route::get('/sponsor-claims', [AdminSponsorClaimController::class, 'index'])->name('sponsor-claims.index');
+        Route::post('/sponsor-claims/{sponsorClaim}/approve', [AdminSponsorClaimController::class, 'approve'])->name('sponsor-claims.approve');
+        Route::post('/sponsor-claims/{sponsorClaim}/reject', [AdminSponsorClaimController::class, 'reject'])->name('sponsor-claims.reject');
+    });
 });
 
 require __DIR__.'/settings.php';

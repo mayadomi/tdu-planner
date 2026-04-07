@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import type { FormDataConvertible } from '@inertiajs/core';
 import { Loader2, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -69,7 +70,7 @@ export function EventSearch({ currentFilters, tduYear, availableYears }: EventSe
     }, []);
 
     const navigate = useCallback((params: Filters) => {
-        const clean: Record<string, unknown> = Object.fromEntries(
+        const clean: Record<string, FormDataConvertible> = Object.fromEntries(
             Object.entries(params)
                 .filter(([, v]) => v !== undefined && v !== '' && v !== false && !(Array.isArray(v) && v.length === 0))
                 .map(([k, v]) => [k, v === true ? 1 : v]),

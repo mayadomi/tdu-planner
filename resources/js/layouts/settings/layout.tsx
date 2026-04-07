@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 import Heading from '@/components/heading';
@@ -10,33 +10,26 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
-import { type NavItem } from '@/types';
+import { index as sponsorsIndex } from '@/actions/App/Http/Controllers/ProfileSponsorClaimController';
+import { type NavItem, type SharedData } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Password',
-        href: editPassword(),
-        icon: null,
-    },
-    {
-        title: 'Two-Factor Auth',
-        href: show(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
+const baseNavItems: NavItem[] = [
+    { title: 'Profile', href: edit(), icon: null },
+    { title: 'Password', href: editPassword(), icon: null },
+    { title: 'Two-Factor Auth', href: show(), icon: null },
+    { title: 'Appearance', href: editAppearance(), icon: null },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { auth } = usePage<SharedData>().props;
     const { urlIsActive } = useActiveUrl();
+
+    const canManageSponsors = auth?.user?.role === 'editor' || auth?.user?.role === 'admin';
+
+    const sidebarNavItems: NavItem[] = [
+        ...baseNavItems,
+        ...(canManageSponsors ? [{ title: 'My Event Hosts', href: sponsorsIndex(), icon: null }] : []),
+    ];
 
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {

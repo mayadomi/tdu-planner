@@ -113,6 +113,37 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all sponsor claims submitted by this user.
+     */
+    public function sponsorClaims(): HasMany
+    {
+        return $this->hasMany(SponsorClaim::class);
+    }
+
+    /**
+     * Get all sponsors associated with this user (any status).
+     */
+    public function sponsors(): BelongsToMany
+    {
+        return $this->belongsToMany(Sponsor::class)
+            ->using(SponsorClaim::class)
+            ->withPivot([
+                'id', 'status', 'request_type', 'editor_note', 'admin_note',
+                'proposed_sponsor_name', 'proposed_sponsor_website',
+                'verified_at', 'verified_by_user_id',
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get only verified sponsor associations for this user.
+     */
+    public function verifiedSponsors(): BelongsToMany
+    {
+        return $this->sponsors()->wherePivot('status', 'verified');
+    }
+
+    /**
      * Toggle favourite status for an event.
      */
     public function toggleFavourite(Event $event): bool

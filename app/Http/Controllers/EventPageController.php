@@ -102,9 +102,13 @@ class EventPageController extends Controller
     {
         $this->authorize('create', Event::class);
 
+        $user = auth()->user();
+
         return Inertia::render('events/create', [
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'sponsors' => Sponsor::orderBy('name')->get(['id', 'name']),
+            'sponsors' => $user->isAdmin()
+                ? Sponsor::orderBy('name')->get(['id', 'name'])
+                : $user->verifiedSponsors()->orderBy('sponsors.name')->get(['sponsors.id', 'sponsors.name']),
             'locations' => Location::orderBy('name')->get(['id', 'name']),
             'tags' => Tag::orderBy('name')->get(['id', 'name']),
         ]);
@@ -116,11 +120,17 @@ class EventPageController extends Controller
     public function store(StoreEventRequest $request): RedirectResponse
     {
         $event = Event::create([
-            ...$request->safe()->except('tag_ids'),
+            ...$request->safe()->except(['tag_ids', 'gpx', 'route_geojson']),
             'created_by_user_id' => $request->user()->id,
         ]);
 
         $event->tags()->sync($request->input('tag_ids', []));
+
+        if ($request->hasFile('gpx')) {
+            $geojson = json_decode($request->input('route_geojson'), true);
+            $event->addMediaFromRequest('gpx')->toMediaCollection('route_gpx');
+            $event->update(['route_geojson' => $geojson]);
+        }
 
         return redirect()->route('events.show', $event)
             ->with('success', 'Event created successfully.');
@@ -133,6 +143,8 @@ class EventPageController extends Controller
     {
         $this->authorize('update', $event);
         $event->load('tags');
+
+        $user = auth()->user();
 
         return Inertia::render('events/edit', [
             'event' => [
@@ -161,7 +173,9 @@ class EventPageController extends Controller
                 'route_gpx_name' => $event->getFirstMedia('route_gpx')?->file_name,
             ],
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'sponsors' => Sponsor::orderBy('name')->get(['id', 'name']),
+            'sponsors' => $user->isAdmin()
+                ? Sponsor::orderBy('name')->get(['id', 'name'])
+                : $user->verifiedSponsors()->orderBy('sponsors.name')->get(['sponsors.id', 'sponsors.name']),
             'locations' => Location::orderBy('name')->get(['id', 'name']),
             'tags' => Tag::orderBy('name')->get(['id', 'name']),
         ]);

@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Calendar, CalendarClock, ClockAlert, Folder, Heart, LayoutGrid, Map, Monitor, Moon, Plus, Settings, Shield, Sun, Users } from 'lucide-react';
+import { Building2, Calendar, CalendarClock, ClockAlert, Folder, Heart, LayoutGrid, Map, Monitor, Moon, NotebookPen, Plus, Settings, Shield, Sun, Users } from 'lucide-react';
 
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -34,12 +34,19 @@ const publicNavItems: NavItem[] = [
 ];
 
 const editorNavItems: NavItem[] = [
-    { title: 'Create Event', href: '/events/create', icon: Plus },
-    { title: 'Sponsors',     href: '/sponsors',      icon: Settings },
+    { title: 'My Events',        href: '/profile/events',   icon: NotebookPen },
+    { title: 'Create Event',     href: '/events/create',    icon: Plus },
+    { title: 'My Event Hosts',   href: '/profile/sponsors', icon: Building2 },
+];
+
+const editorOnlyNavItems: NavItem[] = [
+    { title: 'Manage Logos', href: '/sponsors', icon: Settings },
 ];
 
 const adminNavItems: NavItem[] = [
-    { title: 'Users', href: '/admin/users', icon: Users },
+    { title: 'Sponsors',        href: '/sponsors',              icon: Settings },
+    { title: 'Users',           href: '/admin/users',           icon: Users },
+    { title: 'Sponsor Claims',  href: '/admin/sponsor-claims',  icon: Building2 },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -87,7 +94,7 @@ export function AppSidebar() {
                 {(isEditor || isAdmin) && (
                     <>
                         <SidebarSeparator />
-                        <NavMain items={editorNavItems} label="Editor" />
+                        <NavMain items={[...editorNavItems, ...(isEditor ? editorOnlyNavItems : [])]} label="Editor" />
                     </>
                 )}
 

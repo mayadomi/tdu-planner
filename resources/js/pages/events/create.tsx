@@ -1,5 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { gpx as gpxToGeoJson } from '@tmcw/togeojson';
+import { ArrowLeft, FileX2, Loader2, RouteIcon, Upload } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +51,8 @@ type FormData = {
     ride_distance_km: string;
     elevation_gain_m: string;
     tag_ids: number[];
+    gpx: File | null;
+    route_geojson: string;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -77,11 +81,56 @@ export default function EventCreate({ categories, sponsors, locations, tags }: E
         ride_distance_km: '',
         elevation_gain_m: '',
         tag_ids: [],
+        gpx: null,
+        route_geojson: '',
     });
+
+    const gpxInputRef = useRef<HTMLInputElement>(null);
+    const [gpxParsing, setGpxParsing] = useState(false);
+    const [gpxError, setGpxError] = useState<string | null>(null);
+
+    const handleGpxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setGpxParsing(true);
+        setGpxError(null);
+
+        try {
+            const text = await file.text();
+            const doc = new DOMParser().parseFromString(text, 'application/xml');
+
+            if (doc.querySelector('parsererror')) {
+                setGpxError('Invalid GPX file — could not parse XML.');
+                setGpxParsing(false);
+                return;
+            }
+
+            const geojson = gpxToGeoJson(doc);
+
+            if (!geojson.features || geojson.features.length === 0) {
+                setGpxError('No track data found in this GPX file.');
+                setGpxParsing(false);
+                return;
+            }
+
+            setData((prev) => ({ ...prev, gpx: file, route_geojson: JSON.stringify(geojson) }));
+        } catch {
+            setGpxError('Failed to read the GPX file.');
+        } finally {
+            setGpxParsing(false);
+        }
+    };
+
+    const handleRemoveGpx = () => {
+        setData((prev) => ({ ...prev, gpx: null, route_geojson: '' }));
+        setGpxError(null);
+        if (gpxInputRef.current) gpxInputRef.current.value = '';
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/events');
+        post('/events', { forceFormData: true });
     };
 
     return (
@@ -128,33 +177,6 @@ export default function EventCreate({ categories, sponsors, locations, tags }: E
                                 />
                                 {errors.description && (
                                     <p className="text-sm text-destructive">{errors.description}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="pace">Pace</Label>
-                                <Input
-                                    id="pace"
-                                    value={data.pace}
-                                    onChange={(e) => setData('pace', e.target.value)}
-                                    placeholder="e.g. 28–32 km/h, A-grade, Social"
-                                />
-                                {errors.pace && (
-                                    <p className="text-sm text-destructive">{errors.pace}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="route_url">Route URL</Label>
-                                <Input
-                                    id="route_url"
-                                    type="url"
-                                    value={data.route_url}
-                                    onChange={(e) => setData('route_url', e.target.value)}
-                                    placeholder="e.g. https://www.strava.com/routes/..."
-                                />
-                                {errors.route_url && (
-                                    <p className="text-sm text-destructive">{errors.route_url}</p>
                                 )}
                             </div>
 
@@ -414,15 +436,29 @@ export default function EventCreate({ categories, sponsors, locations, tags }: E
                         </CardContent>
                     </Card>
 
-                    {/* Ride Metrics */}
+                    {/* Ride & Route */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Ride Metrics</CardTitle>
+                            <CardTitle>Ride &amp; Route</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">
                                 Leave blank if this is not a ride event.
                             </p>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="pace">Pace</Label>
+                                <Input
+                                    id="pace"
+                                    value={data.pace}
+                                    onChange={(e) => setData('pace', e.target.value)}
+                                    placeholder="e.g. 28–32 km/h, A-grade, Social"
+                                />
+                                {errors.pace && (
+                                    <p className="text-sm text-destructive">{errors.pace}</p>
+                                )}
+                            </div>
+
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="ride_distance_km">Distance (km)</Label>
@@ -453,6 +489,96 @@ export default function EventCreate({ categories, sponsors, locations, tags }: E
                                     {errors.elevation_gain_m && (
                                         <p className="text-sm text-destructive">{errors.elevation_gain_m}</p>
                                     )}
+                                </div>
+                            </div>
+
+                            <Separator />
+
+                            <div className="space-y-2">
+                                <Label htmlFor="route_url">Route URL</Label>
+                                <Input
+                                    id="route_url"
+                                    type="url"
+                                    value={data.route_url}
+                                    onChange={(e) => setData('route_url', e.target.value)}
+                                    placeholder="e.g. https://www.strava.com/routes/..."
+                                />
+                                {errors.route_url && (
+                                    <p className="text-sm text-destructive">{errors.route_url}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Route File</Label>
+                                <div className="space-y-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            {data.gpx ? (
+                                                <>
+                                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                                                        <RouteIcon className="size-4 text-green-700 dark:text-green-400" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                                                            Route ready
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">{data.gpx.name}</p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                                        <FileX2 className="size-4 text-muted-foreground" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium">No route file</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Upload a GPX file to show the route on the map
+                                                        </p>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {data.gpx && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="shrink-0 text-destructive hover:text-destructive"
+                                                onClick={handleRemoveGpx}
+                                            >
+                                                Remove
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <input
+                                        ref={gpxInputRef}
+                                        type="file"
+                                        accept=".gpx,application/gpx+xml,text/xml,application/xml"
+                                        className="hidden"
+                                        onChange={handleGpxChange}
+                                        disabled={gpxParsing}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full"
+                                        onClick={() => gpxInputRef.current?.click()}
+                                        disabled={gpxParsing}
+                                    >
+                                        {gpxParsing ? (
+                                            <Loader2 className="mr-2 size-4 animate-spin" />
+                                        ) : (
+                                            <Upload className="mr-2 size-4" />
+                                        )}
+                                        {gpxParsing ? 'Parsing GPX…' : data.gpx ? 'Replace GPX file' : 'Upload GPX file'}
+                                    </Button>
+
+                                    {gpxError && <p className="text-sm text-destructive">{gpxError}</p>}
+                                    {errors.gpx && <p className="text-sm text-destructive">{errors.gpx}</p>}
                                 </div>
                             </div>
                         </CardContent>

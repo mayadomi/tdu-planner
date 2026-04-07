@@ -19,29 +19,38 @@ interface SponsorItem {
 
 interface SponsorsIndexProps {
     sponsors: SponsorItem[];
+    isAdmin: boolean;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sponsors', href: '/sponsors' },
 ];
 
-export default function SponsorsIndex({ sponsors }: SponsorsIndexProps) {
+export default function SponsorsIndex({ sponsors, isAdmin }: SponsorsIndexProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Sponsors | TDU Planner" />
+            <Head title="Event Hosts | TDU Planner" />
 
             <div className="mx-auto max-w-4xl p-4 lg:p-6">
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold">Sponsors</h1>
+                    <h1 className="text-2xl font-bold">
+                        {isAdmin ? 'Event Hosts' : 'My Event Hosts'}
+                    </h1>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Manage sponsor logos shown across the planner.
+                        {isAdmin
+                            ? 'Manage logos for all event hosts shown across the planner.'
+                            : 'Manage logos for your verified event hosts.'}
                     </p>
                 </div>
 
                 {sponsors.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
                         <Building2 className="mb-4 size-12 text-muted-foreground/30" />
-                        <p className="text-muted-foreground">No sponsors found.</p>
+                        <p className="text-muted-foreground">
+                            {isAdmin
+                                ? 'No event hosts found.'
+                                : 'You have no verified event hosts yet. Visit My Event Hosts in your settings to submit a claim or request a new host.'}
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
